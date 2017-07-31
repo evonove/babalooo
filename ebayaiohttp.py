@@ -1,7 +1,11 @@
 import aiohttp
 
+
 async def find_advanced(dictionary):
-    """Asynchronous findItemsAdvanced from ebay Finding API using aiohttp"""
+    """
+    Asynchronous findItemsAdvanced from ebay Finding API using aiohttp.
+    RESPONSE-DATA-FORMAT is JSON
+    """
     url = 'http://svcs.ebay.com/services/search/FindingService/v1'
     params = {
         'OPERATION-NAME': 'findItemsAdvanced',
