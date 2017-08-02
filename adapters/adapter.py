@@ -1,34 +1,28 @@
-import abc
+class Adapter:
 
-
-class Adapter(abc.ABC):
-
-    conn = None
-
-    @abc.abstractmethod
     def item_in_database(self, itemId):
         '''Returns True if item with id = itemId is in database'''
-        pass
+        raise NotImplementedError
 
-    @abc.abstractmethod
     def price_changed(self, item):
         '''Returns True if price has changed since the last check'''
-        pass
+        raise NotImplementedError
 
-    @abc.abstractmethod
-    def create_or_update(self, item):
+    def create(self, item):
+        '''Creates an entry for item'''
+        raise NotImplementedError
+
+    def update(self, item):
+        '''Updates item's price'''
+        raise NotImplementedError
+
+    def process(self, items):
         '''
-        Checks if the item is in the database.
-        If it is, updates its price, otherwise creates the entry for the item.
+        If item doesn't exist in database, its entry is created.
+        If item's price has changed, its entry is updated.
         '''
-        pass
-
-    @abc.abstractmethod
-    def commit(self):
-        '''Saves changes in the database'''
-        pass
-
-    @abc.abstractmethod
-    def close(self):
-        '''Closes the connection'''
-        pass
+        for item in items:
+            if not self.item_in_database(item['itemId'][0]):
+                self.create(item)
+            elif self.price_changed(item):
+                self.update(item)
