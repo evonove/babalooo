@@ -1,0 +1,4 @@
+aiohttp
+click
+psycopg2
+redis
