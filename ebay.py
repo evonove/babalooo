@@ -23,23 +23,32 @@ async def observer(conn, product, count):
         print(fail)
 
 
+def open_files(lst):
+    products_list = []
+    for f in lst:
+        elem = json.loads(f.read())
+        if type(elem) == list:
+            products_list += elem
+        elif type(elem) == dict:
+            products_list.append(elem)
+    return products_list
+
+
 @click.command()
-@click.argument('interval')
-@click.argument('search_details_json')
-@click.option('--count', default=10, help='Number of items to check')
-@click.option('--database',
-              default='sqlite',
-              help='Database to use',
-              type=click.Choice(['sqlite', 'postgresql', 'redis']))
+@click.argument('search_details_json', type=click.File('rb'), nargs=-1, required=True)
+@click.option('--interval', default=60, help='Interval (in seconds) between each run', show_default=True)
+@click.option('--count', default=10, help='Number of items to check', show_default=True)
+@click.option('--database', default='sqlite', help='Database to use',
+              type=click.Choice(['sqlite', 'postgresql', 'redis']), show_default=True)
 def main(count, interval, search_details_json, database):
     try:
         conn = adapters.config.config(database)
-        products_list = json.loads(open(search_details_json).read())
+        products_list = open_files(search_details_json)
         loop = asyncio.get_event_loop()
         while(True):
             tasks = [asyncio.ensure_future(observer(conn, product, count)) for product in products_list]
             loop.run_until_complete(asyncio.wait(tasks))
-            time.sleep(int(interval) * 60)
+            time.sleep(interval)
             print('\n%s\n' % ('=' * 100))
     except KeyboardInterrupt:
         exit(0)
