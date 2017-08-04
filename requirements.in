@@ -1,4 +1,4 @@
 aiohttp
 click
-psycopg2
+sqlalchemy
 redis

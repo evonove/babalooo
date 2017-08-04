@@ -24,6 +24,7 @@ async def observer(conn, product, count):
 
 
 def open_files(lst):
+    '''Opens a list of jsons and returns a list of products to search'''
     products_list = []
     for f in lst:
         elem = json.loads(f.read())
@@ -38,8 +39,8 @@ def open_files(lst):
 @click.argument('search_details_json', type=click.File('rb'), nargs=-1, required=True)
 @click.option('--interval', default=60, help='Interval (in seconds) between each run', show_default=True)
 @click.option('--count', default=10, help='Number of items to check', show_default=True)
-@click.option('--database', default='sqlite', help='Database to use',
-              type=click.Choice(['sqlite', 'postgresql', 'redis']), show_default=True)
+@click.option('--database', default='sqlite', help='Database to use', show_default=True,
+              type=click.Choice(['sqlite', 'postgresql', 'redis']))
 def main(count, interval, search_details_json, database):
     try:
         conn = adapters.config.config(database)

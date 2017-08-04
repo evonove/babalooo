@@ -1,12 +1,11 @@
-from . import SQLiteAdapter
-from . import PGSQLAdapter
 from . import RedisAdapter
+from . import SQLAlchemyAdapter
 
 
 def config(database):
     if database == 'sqlite':
-        return SQLiteAdapter.SQLiteAdapter()
+        return SQLAlchemyAdapter.SQLAlchemyAdapter('sqlite')
     elif database == 'postgresql':
-        return PGSQLAdapter.PGSQLAdapter('ebay', 'ebay', 'ebay')
+        return SQLAlchemyAdapter.SQLAlchemyAdapter('postgresql', 'ebay', 'ebay', 'ebay')
     elif database == 'redis':
         return RedisAdapter.RedisAdapter(0)
