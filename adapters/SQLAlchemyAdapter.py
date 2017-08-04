@@ -12,6 +12,7 @@ Base = declarative_base()
 
 
 class Item(Base):
+    '''Class describing the model for items table in database'''
     __tablename__ = 'items'
     itemId = Column(String, primary_key=True)
     url = Column(String)
@@ -25,13 +26,14 @@ class Item(Base):
 class SQLAlchemyAdapter(Adapter):
 
     def __init__(self, backend, database=None, user=None, password=None, host='localhost'):
+        # creates engine for the chosen backend
         if backend == 'sqlite':
             engine = create_engine('sqlite:///products.sqlite3')
         elif backend == 'postgresql':
             engine = create_engine('postgresql+psycopg2://%s:%s@/%s?host=%s' % (user, password, database, host))
-        Base.metadata.create_all(engine)
+        Base.metadata.create_all(engine) # creates the table
         Session = sessionmaker(bind=engine)
-        self.session = Session()
+        self.session = Session() # session to be used for queries
 
     def item_in_database(self, itemId):
         return self.session.query(Item.itemId).filter(Item.itemId == itemId).one_or_none() is not None
@@ -60,6 +62,7 @@ class SQLAlchemyAdapter(Adapter):
                               price_currency=item['sellingStatus'][0]['currentPrice'][0]['@currencyId'],
                               title=item['title'][0],
                               expire=datetime.strptime(item['listingInfo'][0]['endTime'][0][:-5], '%Y-%m-%dT%H:%M:%S'),
+                                #  `--converts the string endTime to Python's datetime using format YYYY-MM-DD HH:MM:SS
                               category='%s %s' % (
                                 item['primaryCategory'][0]['categoryName'][0],
                                 item['primaryCategory'][0]['categoryId'][0])))
