@@ -67,35 +67,40 @@ def open_files(lst):
     return products_list
 
 
+FOUND_MSG = '%s: found %s'
+SEARCH_MSG = '%s: searching for %s'
+ERROR_MSG = '%s: failed search for %s'
+
+
 async def ebay_observer(conn, product, count):
     '''Asynchronous search for product. Saves items found in database'''
-    logging.info('ebay: searching for %s' % product)
+    store_name = 'ebay'
+    logging.info(SEARCH_MSG % (store_name, product))
     response = await find_advanced(product)
     response = response.get('findItemsAdvancedResponse')
     if response is not None:
-        logging.info('ebay: found %s' % product)
+        logging.info(FOUND_MSG % (store_name, product))
         items = ebay_make_items(response, count)
-        conn.process(items, 'ebay')
+        conn.process(items, store_name)
     else:
-        fail = 'ebay: failed search for %s' % product
-        logging.warning(fail)
-        print(fail)
+        logging.warning(ERROR_MSG % (store_name, product))
+        print(ERROR_MSG % (store_name, product))
 
 
 def amazon_observer(conn, product, count):
     '''Searches for product. Saves items found in database'''
-    logging.info('amazon: searching for %s' % product)
+    store_name = 'amazon'
+    logging.info(SEARCH_MSG % (store_name, product))
     keys = open('keys').read().split('\n')
     amazon = bottlenose.Amazon(keys[0], keys[1], keys[2], Region=keys[3])
     response = amazon.ItemSearch(Keywords=product['keywords'], SearchIndex='All', ResponseGroup='Medium')
     items = amazon_make_items(response, count)
     if items is not None:
-        logging.info('amazon: found %s' % product)
-        conn.process(items, 'amazon')
+        logging.info(FOUND_MSG % (store_name, product))
+        conn.process(items, store_name)
     else:
-        fail = 'amazon: failed search for %s' % product
-        logging.warning(fail)
-        print(fail)
+        logging.warning(ERROR_MSG % (store_name, product))
+        print(ERROR_MSG % (store_name, product))
 
 
 @click.command()
