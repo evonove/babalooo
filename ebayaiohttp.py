@@ -10,7 +10,7 @@ async def find_advanced(dictionary):
     params = {
         'OPERATION-NAME': 'findItemsAdvanced',
         'SERVICE-VERSION': '1.0.0',
-        'SECURITY-APPNAME': 'Riccardo-ebay-PRD-4c6cc25dc-e28c4d3d',
+        'SECURITY-APPNAME': open('keys').read().split('\n')[4],
         'RESPONSE-DATA-FORMAT': 'JSON',
         'keywords': dictionary["keywords"].replace(' ', '%20'),
         'categoryId': dictionary['categoryId']

@@ -1,26 +1,9 @@
-from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Float
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 
 from .adapter import Adapter
-
-
-Base = declarative_base()
-
-
-class Item(Base):
-    '''Class describing the model for items table in database'''
-    __tablename__ = 'items'
-    itemId = Column(String, primary_key=True)
-    url = Column(String)
-    price_amount = Column(Float)
-    price_currency = Column(String)
-    title = Column(String)
-    expire = Column(DateTime)
-    category = Column(String)
+from .models import EbayItem, AmazonItem, Base
 
 
 class SQLAlchemyAdapter(Adapter):
@@ -31,45 +14,51 @@ class SQLAlchemyAdapter(Adapter):
             engine = create_engine('sqlite:///products.sqlite3')
         elif backend == 'postgresql':
             engine = create_engine('postgresql+psycopg2://%s:%s@/%s?host=%s' % (user, password, database, host))
-        Base.metadata.create_all(engine) # creates the table
+        Base.metadata.create_all(engine)  # creates the tables
         Session = sessionmaker(bind=engine)
-        self.session = Session() # session to be used for queries
+        self.session = Session()  # session to be used for queries
 
-    def item_in_database(self, itemId):
-        return self.session.query(Item.itemId).filter(Item.itemId == itemId).one_or_none() is not None
+    def item_in_database(self, itemId, table):
+        return self.session.query(table.itemId).filter(table.itemId == itemId).one_or_none() is not None
 
-    def price_changed(self, item):
-        old_price = self.session.query(Item.price_amount).filter(Item.itemId == item['itemId'][0]).scalar()
-        return old_price != float(item['sellingStatus'][0]['currentPrice'][0]['__value__'])
+    def price_changed(self, item, table):
+        old_price = self.session.query(table.price_amount).filter(table.itemId == item['id']).scalar()
+        return old_price != float(item['price_amount'])
 
-    def update(self, item):
-        price = float(item['sellingStatus'][0]['currentPrice'][0]['__value__'])
+    def update(self, item, table):
+        price = float(item['price_amount'])
         print('%s %s : price has changed. Now it\'s %f %s' % (
-            item['itemId'][0], item['title'][0], price,
-            item['sellingStatus'][0]['currentPrice'][0]['@currencyId']))
-        db_item = self.session.query(Item).filter(Item.itemId == item['itemId'][0]).one()
+            item['id'], item['title'], price, item['price_currency']))
+        db_item = self.session.query(table).filter(table.itemId == item['id']).one()
         db_item.price_amount = price
 
-    def create(self, item):
+    def create(self, item, table):
         print('Found new item: %s %s. Price: %s %s' % (
-            item['itemId'][0],
-            item['title'][0],
-            item['sellingStatus'][0]['currentPrice'][0]['__value__'],
-            item['sellingStatus'][0]['currentPrice'][0]['@currencyId']))
-        self.session.add(Item(itemId=int(item['itemId'][0]),
-                              url=item['viewItemURL'][0],
-                              price_amount=item['sellingStatus'][0]['currentPrice'][0]['__value__'],
-                              price_currency=item['sellingStatus'][0]['currentPrice'][0]['@currencyId'],
-                              title=item['title'][0],
-                              expire=datetime.strptime(item['listingInfo'][0]['endTime'][0][:-5], '%Y-%m-%dT%H:%M:%S'),
-                                #  `--converts the string endTime to Python's datetime using format YYYY-MM-DD HH:MM:SS
-                              category='%s %s' % (
-                                item['primaryCategory'][0]['categoryName'][0],
-                                item['primaryCategory'][0]['categoryId'][0])))
+            item['id'],
+            item['title'],
+            item['price_amount'],
+            item['price_currency']))
+        if table == EbayItem:
+            self.session.add(EbayItem(
+                itemId=item['id'],
+                url=item['url'],
+                price_amount=item['price_amount'],
+                price_currency=item['price_currency'],
+                title=item['title'],
+                expire=item['expire'],
+                category=item['category']))
+        elif table == AmazonItem:
+            self.session.add(AmazonItem(
+                itemId=item['id'],
+                url=item['url'],
+                price_amount=item['price_amount'],
+                price_currency=item['price_currency'],
+                title=item['title'],
+                category=item['category']))
 
-    def process(self, items):
+    def process(self, items, table):
         try:
-            super().process(items)
+            super().process(items, table)
             self.session.commit()
         except SQLAlchemyError:
             print('Failed saving in database')

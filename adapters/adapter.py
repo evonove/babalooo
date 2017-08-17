@@ -1,3 +1,6 @@
+from .models import EbayItem, AmazonItem
+
+
 class Adapter:
 
     def item_in_database(self, itemId):
@@ -16,13 +19,17 @@ class Adapter:
         '''Updates item's price'''
         raise NotImplementedError
 
-    def process(self, items):
+    def process(self, items, table):
         '''
         If item doesn't exist in database, its entry is created.
         If item's price has changed, its entry is updated.
         '''
+        if table == 'ebay':
+            table_class = EbayItem
+        elif table == 'amazon':
+            table_class = AmazonItem
         for item in items:
-            if not self.item_in_database(item['itemId'][0]):
-                self.create(item)
-            elif self.price_changed(item):
-                self.update(item)
+            if not self.item_in_database(item['id'], table_class):
+                self.create(item, table_class)
+            elif self.price_changed(item, table_class):
+                self.update(item, table_class)

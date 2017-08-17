@@ -2,3 +2,5 @@ aiohttp
 click
 sqlalchemy
 redis
+bottlenose
+bs4
