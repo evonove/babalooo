@@ -2,10 +2,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, DateTime, Float
 
 
-Base = declarative_base()
-
-
-class Item:
+class Base:
     '''Class describing the model for items table in database'''
     itemId = Column(String, primary_key=True)
     url = Column(String)
@@ -15,10 +12,13 @@ class Item:
     category = Column(String)
 
 
-class EbayItem(Item, Base):
+Base = declarative_base(cls=Base)
+
+
+class EbayItem(Base):
     __tablename__ = 'ebay'
     expire = Column(DateTime)
 
 
-class AmazonItem(Item, Base):
+class AmazonItem(Base):
     __tablename__ = 'amazon'

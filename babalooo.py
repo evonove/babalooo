@@ -9,6 +9,12 @@ from datetime import datetime
 
 from ebayaiohttp import find_advanced
 import adapters.config
+from utils import AMAZON_ASSOCIATE_TAG, AMAZON_REGION
+
+
+FOUND_MSG = '%s: found %s'
+SEARCH_MSG = '%s: searching for %s'
+ERROR_MSG = '%s: failed search for %s'
 
 
 def amazon_make_items(response, count):
@@ -17,10 +23,10 @@ def amazon_make_items(response, count):
     Amazon returns search results as XML to be parsed using BeautifulSoup
     '''
     soup = BeautifulSoup(response, 'xml')
-    if soup.find('ItemSearchResponse') is not None:
+    if soup.find('ItemSearchResponse'):
         items = []
-        for item in soup('Item')[:count]:
-            if item.ListPrice is not None:
+        for item in soup('Item'):
+            if item.ListPrice:
                 price = item.ListPrice.FormattedPrice.text.split()
                 items.append({
                     'id': item.ASIN.text,
@@ -29,8 +35,8 @@ def amazon_make_items(response, count):
                     'price_currency': price[0],
                     'price_amount': float(price[1].replace(',', '.')),
                     'category': item.ItemAttributes.Binding.text})
-            else:
-                count += 1
+            if len(items) == count:
+                break
         return items
     return None
 
@@ -67,18 +73,13 @@ def open_files(lst):
     return products_list
 
 
-FOUND_MSG = '%s: found %s'
-SEARCH_MSG = '%s: searching for %s'
-ERROR_MSG = '%s: failed search for %s'
-
-
 async def ebay_observer(conn, product, count):
     '''Asynchronous search for product. Saves items found in database'''
     store_name = 'ebay'
     logging.info(SEARCH_MSG % (store_name, product))
     response = await find_advanced(product)
     response = response.get('findItemsAdvancedResponse')
-    if response is not None:
+    if response:
         logging.info(FOUND_MSG % (store_name, product))
         items = ebay_make_items(response, count)
         conn.process(items, store_name)
@@ -91,11 +92,10 @@ def amazon_observer(conn, product, count):
     '''Searches for product. Saves items found in database'''
     store_name = 'amazon'
     logging.info(SEARCH_MSG % (store_name, product))
-    keys = open('keys').read().split('\n')
-    amazon = bottlenose.Amazon(keys[0], keys[1], keys[2], Region=keys[3])
+    amazon = bottlenose.Amazon(AssociateTag=AMAZON_ASSOCIATE_TAG, Region=AMAZON_REGION)
     response = amazon.ItemSearch(Keywords=product['keywords'], SearchIndex='All', ResponseGroup='Medium')
     items = amazon_make_items(response, count)
-    if items is not None:
+    if items:
         logging.info(FOUND_MSG % (store_name, product))
         conn.process(items, store_name)
     else:

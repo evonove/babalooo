@@ -1,5 +1,7 @@
 import aiohttp
 
+from utils import EBAY_APP_ID
+
 
 async def find_advanced(dictionary):
     """
@@ -10,7 +12,7 @@ async def find_advanced(dictionary):
     params = {
         'OPERATION-NAME': 'findItemsAdvanced',
         'SERVICE-VERSION': '1.0.0',
-        'SECURITY-APPNAME': open('keys').read().split('\n')[4],
+        'SECURITY-APPNAME': EBAY_APP_ID,
         'RESPONSE-DATA-FORMAT': 'JSON',
         'keywords': dictionary["keywords"].replace(' ', '%20'),
         'categoryId': dictionary['categoryId']
