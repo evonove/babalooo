@@ -8,10 +8,10 @@ from .models import EbayItem, AmazonItem, Base
 
 class SQLAlchemyAdapter(Adapter):
 
-    def __init__(self, backend, database=None, user=None, password=None, host='localhost'):
+    def __init__(self, backend, database, user=None, password=None, host='localhost'):
         # creates engine for the chosen backend
         if backend == 'sqlite':
-            engine = create_engine('sqlite:///products.sqlite3')
+            engine = create_engine('sqlite:///%s' % database)
         elif backend == 'postgresql':
             engine = create_engine('postgresql+psycopg2://%s:%s@/%s?host=%s' % (user, password, database, host))
         Base.metadata.create_all(engine)  # creates the tables

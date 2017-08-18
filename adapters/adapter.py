@@ -3,19 +3,19 @@ from .models import EbayItem, AmazonItem
 
 class Adapter:
 
-    def item_in_database(self, itemId):
+    def item_in_database(self, itemId, table):
         '''Returns True if item with id = itemId is in database'''
         raise NotImplementedError
 
-    def price_changed(self, item):
+    def price_changed(self, item, table):
         '''Returns True if price has changed since the last check'''
         raise NotImplementedError
 
-    def create(self, item):
+    def create(self, item, table):
         '''Creates an entry for item'''
         raise NotImplementedError
 
-    def update(self, item):
+    def update(self, item, table):
         '''Updates item's price'''
         raise NotImplementedError
 

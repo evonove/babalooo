@@ -5,21 +5,21 @@ def get_associate_tag():
     try:
         return os.environ['AMAZON_ASSOCIATE_TAG']
     except KeyError:
-        raise 'AMAZON_ASSOCIATE_TAG not set'
+        raise KeyError('AMAZON_ASSOCIATE_TAG not set')
 
 
 def get_amazon_region():
     try:
         return os.environ['AMAZON_REGION']
     except KeyError:
-        raise 'AMAZON_REGION not set'
+        raise KeyError('AMAZON_REGION not set')
 
 
 def get_ebay_app_id():
     try:
         return os.environ['EBAY_APP_ID']
     except KeyError:
-        raise 'EBAY_APP_ID not set'
+        raise KeyError('EBAY_APP_ID not set')
 
 
 AMAZON_ASSOCIATE_TAG = get_associate_tag()
