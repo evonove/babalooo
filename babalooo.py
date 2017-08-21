@@ -9,7 +9,7 @@ from datetime import datetime
 
 from ebayaiohttp import find_advanced
 import adapters.config
-from utils import AMAZON_ASSOCIATE_TAG, AMAZON_REGION
+from utils import get_associate_tag, get_amazon_region
 
 
 FOUND_MSG = '%s: found %s'
@@ -22,6 +22,7 @@ def amazon_make_items(response, count):
     Constructs a list of dict objects containing information about items
     Amazon returns search results as XML to be parsed using BeautifulSoup
     '''
+    print(type(response))
     soup = BeautifulSoup(response, 'xml')
     if soup.find('ItemSearchResponse'):
         items = []
@@ -92,7 +93,7 @@ def amazon_observer(conn, product, count):
     '''Searches for product. Saves items found in database'''
     store_name = 'amazon'
     logging.info(SEARCH_MSG % (store_name, product))
-    amazon = bottlenose.Amazon(AssociateTag=AMAZON_ASSOCIATE_TAG, Region=AMAZON_REGION)
+    amazon = bottlenose.Amazon(AssociateTag=get_associate_tag(), Region=get_amazon_region())
     response = amazon.ItemSearch(Keywords=product['keywords'], SearchIndex='All', ResponseGroup='Medium')
     items = amazon_make_items(response, count)
     if items:

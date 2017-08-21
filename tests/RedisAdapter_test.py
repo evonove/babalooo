@@ -1,59 +1,58 @@
 from datetime import datetime
+from pytest_redis import factories
 
 from adapters.RedisAdapter import RedisAdapter
 
 
-def test_redis_item_in_database():
+redis_my_proc = factories.redis_proc(port=6379, executable='/home/riccardo/redis-4.0.1/src/redis-server', db_count=1)
+redis_fix = factories.redisdb('redis_my_proc', decode=True)
+
+
+def test_redis_item_in_database(redis_fix):
     '''Tests RedisAdapter.item_in_database() properly returns True after creating an entry'''
-    redis = RedisAdapter(9)  # database 0 is default database
-    redis.conn.hmset('id', {
+    redis_fix.hmset('id', {
                     'URL': 'url',
                     'price_amount': 10.99,
                     'price_currency': 'price_currency',
                     'title': 'title',
                     'expire': 'expire',
                     'category': 'category'})
-    assert redis.item_in_database('id', None)  # None <= Redis hasn't got tables
-    redis.conn.flushdb()
+    assert RedisAdapter().item_in_database('id')
 
 
-def test_redis_price_changed():
+def test_redis_price_changed(redis_fix):
     '''Tests RedisAdapter.price_changed() propertly returns True passing a different price'''
-    redis = RedisAdapter(9)  # database 0 is default database
-    redis.conn.hmset('id', {
+    redis_fix.hmset('id', {
                     'URL': 'url',
                     'price_amount': 10.99,
                     'price_currency': 'price_currency',
                     'title': 'title',
                     'expire': 'expire',
                     'category': 'category'})
-    assert redis.price_changed(dict(id='id', price_amount=11.99), None)
-    redis.conn.flushdb()
+    assert RedisAdapter().price_changed(dict(id='id', price_amount=11.99))
 
 
-def test_redis_update():
+def test_redis_update(redis_fix):
     '''Tests item has been updated after calling RedisAdapter.update() passing a different price'''
-    redis = RedisAdapter(9)  # database 0 is default database
-    redis.conn.hmset('id', {
+    redis_fix.hmset('id', {
                     'URL': 'url',
                     'price_amount': 10.99,
                     'price_currency': 'price_currency',
                     'title': 'title',
                     'expire': 'expire',
                     'category': 'category'})
-    redis.update(dict(
+    RedisAdapter().update(dict(
         id='id',
         title='title',
         price_amount=11.99,
         price_currency='EUR'
-    ), None)
-    assert float(redis.conn.hget('id', 'price_amount')) == 11.99
-    redis.conn.flushdb()
+    ))
+    assert float(redis_fix.hget('id', 'price_amount')) == 11.99
 
 
-def test_redis_create():
+def test_redis_create(redis_fix):
     '''Tests entry presence after calling RedisAdapter.create()'''
-    redis = RedisAdapter(9)  # database 0 is default database
+    redis = RedisAdapter()
     item = dict(
         id='id',
         url='url',
@@ -63,6 +62,5 @@ def test_redis_create():
         expire=datetime(2000, 1, 1),
         category='category'
     )
-    redis.create(item, None)
-    assert redis.item_in_database('id', None)
-    redis.conn.flushdb()
+    redis.create(item)
+    assert redis.item_in_database('id')

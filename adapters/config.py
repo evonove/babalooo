@@ -11,4 +11,4 @@ def config(database):
         # arguments are (DB_program, db_name, user, password, (optional, default = localhost) host)
         return SQLAlchemyAdapter.SQLAlchemyAdapter('postgresql', 'babalooo', 'babalooo', 'babalooo')
     elif database == 'redis':
-        return RedisAdapter.RedisAdapter(0)
+        return RedisAdapter.RedisAdapter()

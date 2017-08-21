@@ -1,5 +1,3 @@
-import os
-
 from datetime import datetime
 
 from adapters.SQLAlchemyAdapter import SQLAlchemyAdapter
@@ -8,7 +6,7 @@ from adapters.models import EbayItem, AmazonItem
 
 def test_SQLAlchemy_item_in_database():
     '''Tests SQLAlchemyAdapter.item_in_database() properly returns True after creating an entry'''
-    conn = SQLAlchemyAdapter('sqlite', 'test_db.sqlite3')
+    conn = SQLAlchemyAdapter('sqlite', ':memory:')
     conn.session.add(EbayItem(
         itemId='id',
         url='url',
@@ -28,12 +26,11 @@ def test_SQLAlchemy_item_in_database():
         category='category'
     ))
     assert conn.item_in_database('id', AmazonItem)
-    os.remove('test_db.sqlite3')
 
 
 def test_SQLAlchemy_price_changed():
     '''Tests SQLAlchemyAdapter.price_changed() propertly returns True passing a different price'''
-    conn = SQLAlchemyAdapter('sqlite', 'test_db.sqlite3')
+    conn = SQLAlchemyAdapter('sqlite', ':memory:')
     conn.session.add(EbayItem(
         itemId='id',
         url='url',
@@ -44,12 +41,11 @@ def test_SQLAlchemy_price_changed():
         category='category'
     ))
     assert conn.price_changed(dict(id='id', price_amount=11.99), EbayItem)
-    os.remove('test_db.sqlite3')
 
 
 def test_SQLAlchemy_update():
     '''Tests item has been updated after calling SQLAlchemyAdapter.update() passing a different price'''
-    conn = SQLAlchemyAdapter('sqlite', 'test_db.sqlite3')
+    conn = SQLAlchemyAdapter('sqlite', ':memory:')
     conn.session.add(EbayItem(
         itemId='id',
         url='url',
@@ -66,12 +62,11 @@ def test_SQLAlchemy_update():
         price_currency='EUR'
     ), EbayItem)
     assert conn.session.query(EbayItem.price_amount).filter(EbayItem.itemId == 'id').scalar() == 11.99
-    os.remove('test_db.sqlite3')
 
 
 def test_SQLAlchemy_create():
     '''Tests entry presence after calling SQLAlchemyAdapter.create()'''
-    conn = SQLAlchemyAdapter('sqlite', 'test_db.sqlite3')
+    conn = SQLAlchemyAdapter('sqlite', ':memory:')
     item = dict(
         id='id',
         url='url',
@@ -93,4 +88,3 @@ def test_SQLAlchemy_create():
     )
     conn.create(item, AmazonItem)
     assert conn.item_in_database('id', AmazonItem)
-    os.remove('test_db.sqlite3')

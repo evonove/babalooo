@@ -27,7 +27,7 @@ class SQLAlchemyAdapter(Adapter):
 
     def update(self, item, table):
         price = float(item['price_amount'])
-        print('%s %s : price has changed. Now it\'s %f %s' % (
+        print('%s %s : price has changed. Now it\'s %s %s' % (
             item['id'], item['title'], price, item['price_currency']))
         db_item = self.session.query(table).filter(table.itemId == item['id']).one()
         db_item.price_amount = price

@@ -20,8 +20,3 @@ def get_ebay_app_id():
         return os.environ['EBAY_APP_ID']
     except KeyError:
         raise KeyError('EBAY_APP_ID not set')
-
-
-AMAZON_ASSOCIATE_TAG = get_associate_tag()
-AMAZON_REGION = get_amazon_region()
-EBAY_APP_ID = get_ebay_app_id()
