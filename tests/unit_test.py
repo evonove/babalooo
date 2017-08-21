@@ -1,7 +1,6 @@
 import os
 
 import asyncio
-import json
 from datetime import datetime
 
 import babalooo
@@ -14,15 +13,20 @@ def test_open_files():
     Tests open_files() is returning a list containing all the products in the json files
     Uses two files: tests/products.json and tests/products1.json
     '''
-    dicts = [json.loads(open('tests/products.json').read()), json.loads(open('tests/products1.json').read())]
     jsons = (open('tests/products.json'), open('tests/products1.json'))
     product_list = babalooo.open_files(jsons)
-    for d in dicts:
-        assert d in product_list
+    assert product_list[0] == {
+      "keywords": "magic",
+      "categoryId": "38292"
+    }
+    assert product_list[1] == {
+      "keywords": "magic",
+      "categoryId": "11111"
+    }
 
 
 def test_amazon_make_items():
-    '''Mocks amazon response to test amazon_make_items is returning a list of found items'''
+    '''Tests amazon_make_items is returning a list of found items'''
     items = babalooo.amazon_make_items(open('tests/amazon.xml').read().encode(), 1)
     assert isinstance(items, list)
     assert items[0]['id'] == 'B071RM7CYZ'
@@ -36,7 +40,7 @@ def test_amazon_make_items():
 
 
 def test_ebay_make_items(mocker):
-    '''Mocks ebay response to test ebay_make_items is returning a list of found items'''
+    '''Tests ebay_make_items is returning a list of found items'''
     mock = [dict(searchResult=None), ]
     mocker.patch.dict(mock[0])
     mock[0]['searchResult'] = [dict(item=None), ]

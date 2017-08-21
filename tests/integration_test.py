@@ -8,7 +8,7 @@ from . import missing_ebay_app_id, missing_secret_key, missing_access_key, missi
 
 @missing_ebay_app_id
 def test_ebayaiohttp():
-    '''Tests ebayaiohttp.find_advanced()'''
+    '''Tests ebayaiohttp.find_advanced() is returning findItemsAdvancedResponse decoded json'''
     dictionary = {
         'keywords': 'magic the gathering',
         'categoryId': '38292'

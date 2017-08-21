@@ -2,12 +2,14 @@ from datetime import datetime
 from pytest_redis import factories
 
 from adapters.RedisAdapter import RedisAdapter
+from . import missing_redis_server, REDIS_SERVER_PATH
 
 
-redis_my_proc = factories.redis_proc(port=6379, executable='/home/riccardo/redis-4.0.1/src/redis-server', db_count=1)
+redis_my_proc = factories.redis_proc(port=6379, db_count=1, executable=REDIS_SERVER_PATH)
 redis_fix = factories.redisdb('redis_my_proc', decode=True)
 
 
+@missing_redis_server
 def test_redis_item_in_database(redis_fix):
     '''Tests RedisAdapter.item_in_database() properly returns True after creating an entry'''
     redis_fix.hmset('id', {
@@ -20,6 +22,7 @@ def test_redis_item_in_database(redis_fix):
     assert RedisAdapter().item_in_database('id')
 
 
+@missing_redis_server
 def test_redis_price_changed(redis_fix):
     '''Tests RedisAdapter.price_changed() propertly returns True passing a different price'''
     redis_fix.hmset('id', {
@@ -32,6 +35,7 @@ def test_redis_price_changed(redis_fix):
     assert RedisAdapter().price_changed(dict(id='id', price_amount=11.99))
 
 
+@missing_redis_server
 def test_redis_update(redis_fix):
     '''Tests item has been updated after calling RedisAdapter.update() passing a different price'''
     redis_fix.hmset('id', {
@@ -50,6 +54,7 @@ def test_redis_update(redis_fix):
     assert float(redis_fix.hget('id', 'price_amount')) == 11.99
 
 
+@missing_redis_server
 def test_redis_create(redis_fix):
     '''Tests entry presence after calling RedisAdapter.create()'''
     redis = RedisAdapter()
