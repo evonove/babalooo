@@ -3,13 +3,12 @@ import time
 import logging
 import click
 import json
-import bottlenose
 from bs4 import BeautifulSoup
 from datetime import datetime
 
 from ebayaiohttp import find_advanced
-import adapters.config
-from utils import get_associate_tag, get_amazon_region
+from amazonasync import item_search
+from adapters.config import config
 
 
 FOUND_MSG = '%s: found %s'
@@ -22,7 +21,6 @@ def amazon_make_items(response, count):
     Constructs a list of dict objects containing information about items
     Amazon returns search results as XML to be parsed using BeautifulSoup
     '''
-    print(type(response))
     soup = BeautifulSoup(response, 'xml')
     if soup.find('ItemSearchResponse'):
         items = []
@@ -89,12 +87,11 @@ async def ebay_observer(conn, product, count):
         print(ERROR_MSG % (store_name, product))
 
 
-def amazon_observer(conn, product, count):
+async def amazon_observer(conn, product, count):
     '''Searches for product. Saves items found in database'''
     store_name = 'amazon'
     logging.info(SEARCH_MSG % (store_name, product))
-    amazon = bottlenose.Amazon(AssociateTag=get_associate_tag(), Region=get_amazon_region())
-    response = amazon.ItemSearch(Keywords=product['keywords'], SearchIndex='All', ResponseGroup='Medium')
+    response = await item_search(product)
     items = amazon_make_items(response, count)
     if items:
         logging.info(FOUND_MSG % (store_name, product))
@@ -112,14 +109,15 @@ def amazon_observer(conn, product, count):
               type=click.Choice(['sqlite', 'postgresql', 'redis']))
 def main(count, interval, search_details_json, database):
     try:
-        conn = adapters.config.config(database)
+        conn = config(database)
         products_list = open_files(search_details_json)
         loop = asyncio.get_event_loop()
         while(True):
-            tasks = [asyncio.ensure_future(ebay_observer(conn, product, count)) for product in products_list]
+            tasks = [
+                asyncio.ensure_future(ebay_observer(conn, product, count)) for product in products_list
+                ] + [
+                asyncio.ensure_future(amazon_observer(conn, product, count)) for product in products_list]
             loop.run_until_complete(asyncio.wait(tasks))
-            for product in products_list:
-                amazon_observer(conn, product, count)
             time.sleep(interval)
             print('\n%s\n' % ('=' * 100))
     except KeyboardInterrupt:

@@ -15,7 +15,6 @@ Environment variables
 - AWS\_ACCESS\_KEY\_ID
 - AWS\_SECRET\_ACCESS\_KEY
 - AMAZON\_ASSOCIATE\_TAG
-- AMAZON\_REGION
 - EBAY\_APP\_ID
 
 are required to access Ebay and Amazon for searching.

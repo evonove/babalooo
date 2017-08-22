@@ -1,2 +1,2 @@
 [run]
-source = babalooo, ebayaiohttp, adapters/
+source = babalooo, ebayaiohttp, adapters/, amazonasync

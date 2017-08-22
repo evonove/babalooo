@@ -1,5 +1,3 @@
-import os
-
 import asyncio
 from datetime import datetime
 
@@ -76,7 +74,7 @@ def test_ebay_make_items(mocker):
 
 def test_ebay_observer(mocker):
     '''Tests ebay_observer() is properly saving items in database'''
-    conn = SQLAlchemyAdapter('sqlite', 'test_db.sqlite3')
+    conn = SQLAlchemyAdapter('sqlite', ':memory:')
 
     async def mock_find():
         return dict(findItemsAdvancedResponse=True)
@@ -93,24 +91,15 @@ def test_ebay_observer(mocker):
     # ebay_observer() is called passing product=None because it is only used in find_advanced() (mocked)
     asyncio.get_event_loop().run_until_complete(babalooo.ebay_observer(conn, None, 1))
     assert conn.item_in_database('id', EbayItem)
-    os.remove('test_db.sqlite3')
 
 
 def test_amazon_observer(mocker):
     '''Tests amazon_observer() is properly saving items in database'''
-    conn = SQLAlchemyAdapter('sqlite', 'test_db.sqlite3')
-    mock_amazon = mocker.patch('babalooo.bottlenose.Amazon')
-    mock_amazon.ItemSearch.return_value = None
-    mocker.patch('babalooo.amazon_make_items', return_value=[dict(
-        id='id',
-        title='title',
-        url='url',
-        price_amount=10.99,
-        price_currency='EUR',
-        category='category'
-    )])
-    mocker.patch('babalooo.get_associate_tag', return_value='associate tag')
-    mocker.patch('babalooo.get_amazon_region', return_value='amazon region')
-    babalooo.amazon_observer(conn, dict(keywords=None), 1)
-    assert conn.item_in_database('id', AmazonItem)
-    os.remove('test_db.sqlite3')
+    conn = SQLAlchemyAdapter('sqlite', ':memory:')
+
+    async def mock_find():
+        return open('tests/amazon.xml').read().encode()
+    mocker.patch('babalooo.item_search', return_value=mock_find())
+    # amazon_observer() is called passing product=None because it is only used in item_search() (mocked)
+    asyncio.get_event_loop().run_until_complete(babalooo.amazon_observer(conn, None, 1))
+    assert conn.item_in_database('B071RM7CYZ', AmazonItem)

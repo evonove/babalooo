@@ -1,9 +1,8 @@
-import bottlenose
 import asyncio
 
-import ebayaiohttp
-import utils
-from . import missing_ebay_app_id, missing_secret_key, missing_access_key, missing_associate_tag, missing_amazon_region
+from ebayaiohttp import find_advanced
+from amazonasync import item_search
+from . import missing_ebay_app_id, missing_secret_key, missing_access_key, missing_associate_tag
 
 
 @missing_ebay_app_id
@@ -13,7 +12,7 @@ def test_ebayaiohttp():
         'keywords': 'magic the gathering',
         'categoryId': '38292'
     }
-    result = asyncio.get_event_loop().run_until_complete(ebayaiohttp.find_advanced(dictionary))
+    result = asyncio.get_event_loop().run_until_complete(find_advanced(dictionary))
     assert isinstance(result, dict)
     assert result.get('findItemsAdvancedResponse')
 
@@ -21,13 +20,8 @@ def test_ebayaiohttp():
 @missing_secret_key
 @missing_access_key
 @missing_associate_tag
-@missing_amazon_region
-def test_bottlenose():
-    '''
-    Tests integration with bottlenose.
-    bottlenose.Amazon.ItemSearch() should return an XML containing the response
-    '''
-    amazon = bottlenose.Amazon(AssociateTag=utils.get_associate_tag(), Region=utils.get_amazon_region())
+def test_amazonasync():
+    '''Tests amazonasync.item_search() is returning an XML containing the ItemSearchResponse tag'''
     product = {"keywords": "magic"}
-    response = amazon.ItemSearch(Keywords=product['keywords'], SearchIndex='All', ResponseGroup='Medium')
-    assert str(response).find('<ItemSearchResponse') > 0
+    response = asyncio.get_event_loop().run_until_complete(item_search(product))
+    assert response.find('<ItemSearchResponse') > 0

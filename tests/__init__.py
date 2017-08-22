@@ -27,14 +27,6 @@ def amazon_associate_tag_exist():
     return True
 
 
-def amazon_region_exist():
-    try:
-        os.environ['AMAZON_REGION']
-    except KeyError:
-        return False
-    return True
-
-
 def ebay_app_id_exists():
     try:
         os.environ['EBAY_APP_ID']
@@ -54,7 +46,6 @@ def redis_path_exists():
 missing_secret_key = pytest.mark.skipif(not amazon_secret_key_exist(), reason='Missing Amazon secret access key')
 missing_access_key = pytest.mark.skipif(not amazon_access_key_exist(), reason='Missing Amazon access key')
 missing_associate_tag = pytest.mark.skipif(not amazon_associate_tag_exist(), reason='Missing Amazon associate tag')
-missing_amazon_region = pytest.mark.skipif(not amazon_region_exist(), reason='Missing Amazon region')
 missing_ebay_app_id = pytest.mark.skipif(not ebay_app_id_exists(), reason='Missing Ebay AppID')
 missing_redis_server = pytest.mark.skipif(not redis_path_exists(), reason='Missing redis-server')
 REDIS_SERVER_PATH = os.getenv('REDIS_SERVER_PATH')
