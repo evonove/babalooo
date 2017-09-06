@@ -2,13 +2,13 @@ version: '2'
 services:
   redis:
     image: "library/redis:latest"
-    ports: 
+    ports:
         - "6379:6379"
   postgres:
     image: "library/postgres:latest"
     environment:
-        - POSTGRES_USER=ebay
-        - POSTGRES_PASSWORD=ebay
-        - POSTGRES_DB=ebay
+        - POSTGRES_USER=babalooo
+        - POSTGRES_PASSWORD=babalooo
+        - POSTGRES_DB=babalooo
     ports:
         - "5432:5432"
